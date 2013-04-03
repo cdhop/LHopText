@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ "$1" = "clean" ]
+then
+	echo "Cleaning jar and class files";
+	rm *.jar
+	rm *.class
+elif [ "$1" = "jar" ]
+then
+	echo "Building Jar" 
+	javac *.java
+ 	jar -cvfm LHopText.jar manifest *.class
+ 	chmod 755 LHopText.jar
+	rm *.class
+elif [ "$1" = "class" ]
+then
+	echo "Building Class Files"
+	javac *.java
+else
+	echo "Missing Argument"
+fi
