@@ -30,7 +30,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 	JButton jbtnUndo;
 	JButton jbtnRedo;
 	
-	String currentPath;
+	File currentDirectory;
 
 	public LHopText()
 	{
@@ -44,7 +44,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		buildMenu();
 		buildToolBar();
 		
-		currentPath = System.getProperty("user.home");
+		currentDirectory = new File(System.getProperty("user.home"));
 		
 		dlmFiles = new DefaultListModel();		
 		jlstFiles = new JList(dlmFiles);
@@ -406,12 +406,12 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		else if(arg.equals("Open"))
 		{
 			JFileChooser chooser = new JFileChooser();
-			chooser.setCurrentDirectory(new File(currentPath));	
+			chooser.setCurrentDirectory(currentDirectory);	
 			
 			if(chooser.showOpenDialog(jfrm) == JFileChooser.APPROVE_OPTION)
 			{
 				open(chooser.getSelectedFile());
-				currentPath = chooser.getCurrentDirectory().toString();
+				currentDirectory = chooser.getCurrentDirectory();
 			}
 		}
 		else if(arg.equals("Save"))
@@ -424,12 +424,12 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 				HopDocument hd = (HopDocument) dlmFiles.getElementAt(idx);
 				if(hd.getFile()==null)
 				{
-					chooser.setCurrentDirectory(new File(currentPath));
+					chooser.setCurrentDirectory(currentDirectory);
 					
 					if(chooser.showSaveDialog(jfrm) == JFileChooser.APPROVE_OPTION)
 					{
 						hd.setFile(chooser.getSelectedFile());
-						currentPath = chooser.getCurrentDirectory().toString();
+						currentDirectory = chooser.getCurrentDirectory();
 					}
 				}
 			
@@ -455,7 +455,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 				HopDocument hd = (HopDocument) dlmFiles.getElementAt(idx);
 				
 				JFileChooser chooser = new JFileChooser();
-				chooser.setCurrentDirectory(new File(currentPath));
+				chooser.setCurrentDirectory(currentDirectory);
 				
 				if(chooser.showSaveDialog(jfrm) == JFileChooser.APPROVE_OPTION)
 				{
@@ -463,7 +463,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 					{
 						hd.setFile(chooser.getSelectedFile());
 						hd.save();
-						currentPath = chooser.getCurrentDirectory().toString();
+						currentDirectory = chooser.getCurrentDirectory();
 					}
 					catch(IOException ie)
 					{
