@@ -6,10 +6,14 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.undo.*;
 import java.text.*;
+import javax.swing.tree.TreeModel;
 
 public class LHopText implements ActionListener, ListSelectionListener, ItemListener
 {
 	JFrame jfrm;
+	
+	FileSystemModel fileSystemModel;
+	JTree fileTree;
 	
 	DefaultListModel dlmFiles;
 	JList jlstFiles;
@@ -46,20 +50,49 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		
 		currentDirectory = new File(System.getProperty("user.home"));
 		
+		// Create and setup the FileTree
+		fileSystemModel = new FileSystemModel(new File("/."));
+    	fileTree = new JTree(fileSystemModel);
+    	fileTree.setEditable(true);
+    	JScrollPane jscrpFileTree = new JScrollPane(fileTree);  
+    	fileTree.addMouseListener(new MouseAdapter()
+ 		{
+ 			public void mousePressed(MouseEvent e) 
+     		{
+         		int selRow = fileTree.getRowForLocation(e.getX(), e.getY());
+         		if(selRow != -1) 
+         		{
+             		if(e.getClickCount() == 2) 
+             		{
+             			File file = (File) fileTree.getLastSelectedPathComponent();
+             			if(file.isFile())
+             			{
+             				open(file);
+             			}
+             		}
+         		}
+     		}
+ 		});
+    	  	
+    	    	
+    	// Create and setup the FileList		
 		dlmFiles = new DefaultListModel();		
 		jlstFiles = new JList(dlmFiles);
 		jlstFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jlstFiles.addListSelectionListener(this);
-		JLabel jlabFileListHeader = new JLabel("Documents", JLabel.CENTER);
+		JLabel jlabFileListHeader = new JLabel("Open Documents", JLabel.CENTER);
 		jlabFileListHeader.setBorder(BorderFactory.createEtchedBorder());
-		JScrollPane jscrpFilelist = new JScrollPane(jlstFiles);
-		jscrpFilelist.setColumnHeaderView(jlabFileListHeader);
-			
+		JScrollPane jscrpFileList = new JScrollPane(jlstFiles);
+		jscrpFileList.setColumnHeaderView(jlabFileListHeader);
+		
+		// Add the FileTree and the FileList to the left splitpane
+		JSplitPane jplLeft = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, jscrpFileTree, jscrpFileList);
+					
 		JPanel jplRight = new JPanel();
 		JLabel jlabEmpty = new JLabel("No Document");
 		jplRight.add(jlabEmpty);
 		
-		jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jscrpFilelist, jplRight);
+		jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jplLeft, jplRight);
 		jsp.setDividerLocation(new Double(.2));
 		
 		buildFindPanel();
@@ -688,7 +721,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		catch(IOException ie)
 		{
 			warnUser("Unable to create/open file: " + file.getName());
-			ie.printStackTrace();
+			// ie.printStackTrace();
 		}
 		
 		jsp.setDividerLocation(divloc);
