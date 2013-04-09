@@ -87,6 +87,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		
 		// Add the FileTree and the FileList to the left splitpane
 		JSplitPane jplLeft = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, jscrpFileTree, jscrpFileList);
+		jplLeft.setResizeWeight(new Double(0.7));
 					
 		JPanel jplRight = new JPanel();
 		JLabel jlabEmpty = new JLabel("No Document");
