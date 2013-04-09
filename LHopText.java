@@ -52,30 +52,35 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		
 		// Create and setup the FileTree
 		fileSystemModel = new FileSystemModel(new File("/."));
-    	fileTree = new JTree(fileSystemModel);
-    	fileTree.setEditable(true);
-    	JScrollPane jscrpFileTree = new JScrollPane(fileTree);  
-    	fileTree.addMouseListener(new MouseAdapter()
+    		fileTree = new JTree(fileSystemModel);
+    		fileTree.setEditable(true);
+    		JScrollPane jscrpFileTree = new JScrollPane(fileTree);  
+    		fileTree.addMouseListener(new MouseAdapter()
  		{
  			public void mousePressed(MouseEvent e) 
-     		{
-         		int selRow = fileTree.getRowForLocation(e.getX(), e.getY());
-         		if(selRow != -1) 
-         		{
-             		if(e.getClickCount() == 2) 
-             		{
-             			File file = (File) fileTree.getLastSelectedPathComponent();
-             			if(file.isFile())
-             			{
-             				open(file);
-             			}
-             		}
-         		}
-     		}
+     			{
+         			int selRow = fileTree.getRowForLocation(e.getX(), e.getY());
+         			if(selRow != -1) 
+         			{
+					if(e.isPopupTrigger())
+					{
+						System.out.println("JTree Popup Trigger Pulled");
+					}
+
+             				if(e.getClickCount() == 2) 
+             				{
+             					File file = (File) fileTree.getLastSelectedPathComponent();
+             					if(file.isFile())
+             					{
+             						open(file);
+             					}
+             				}
+         			}
+     			}
  		});
     	  	
     	    	
-    	// Create and setup the FileList		
+    		// Create and setup the FileList		
 		dlmFiles = new DefaultListModel();		
 		jlstFiles = new JList(dlmFiles);
 		jlstFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
