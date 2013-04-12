@@ -1,9 +1,11 @@
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.datatransfer.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
+import javax.swing.tree.*;
 import javax.swing.undo.*;
 import java.text.*;
 import javax.swing.tree.TreeModel;
@@ -11,6 +13,9 @@ import javax.swing.tree.TreeModel;
 public class LHopText implements ActionListener, ListSelectionListener, ItemListener
 {
 	JFrame jfrm;
+	
+	JSplitPane jspLeft;
+	JPanel jplRight;
 	
 	FileSystemModel fileSystemModel;
 	JTree fileTree;
@@ -27,7 +32,8 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 	
 	JFormattedTextField jftfGoto;
 		
-	JPopupMenu jpu;
+	JPopupMenu jpuText;
+	JPopupMenu jpuFileTree;
 	
 	JMenuItem jmiUndo;
 	JMenuItem jmiRedo;
@@ -44,43 +50,16 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		int height = screenSize.height * 6 /10;
 		jfrm.setSize(width,height);
 		jfrm.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		currentDirectory = new File(System.getProperty("user.home"));
 	
 		buildMenu();
 		buildToolBar();
 		
-		currentDirectory = new File(System.getProperty("user.home"));
-		
-		// Create and setup the FileTree
-		fileSystemModel = new FileSystemModel(new File("/."));
-    		fileTree = new JTree(fileSystemModel);
-    		fileTree.setEditable(true);
-    		JScrollPane jscrpFileTree = new JScrollPane(fileTree);  
-    		fileTree.addMouseListener(new MouseAdapter()
- 		{
- 			public void mousePressed(MouseEvent e) 
-     			{
-         			int selRow = fileTree.getRowForLocation(e.getX(), e.getY());
-         			if(selRow != -1) 
-         			{
-					if(e.isPopupTrigger())
-					{
-						System.out.println("JTree Popup Trigger Pulled");
-					}
-
-             				if(e.getClickCount() == 2) 
-             				{
-             					File file = (File) fileTree.getLastSelectedPathComponent();
-             					if(file.isFile())
-             					{
-             						open(file);
-             					}
-             				}
-         			}
-     			}
- 		});
-    	  	
-    	    	
-    		// Create and setup the FileList		
+		buildFileTree();
+    	JScrollPane jscrpFileTree = new JScrollPane(fileTree);  
+    	   	    	
+    	// Create and setup the FileList		
 		dlmFiles = new DefaultListModel();		
 		jlstFiles = new JList(dlmFiles);
 		jlstFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -91,14 +70,14 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		jscrpFileList.setColumnHeaderView(jlabFileListHeader);
 		
 		// Add the FileTree and the FileList to the left splitpane
-		JSplitPane jplLeft = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, jscrpFileTree, jscrpFileList);
-		jplLeft.setResizeWeight(new Double(0.7));
+		jspLeft = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, jscrpFileTree, jscrpFileList);
+		jspLeft.setResizeWeight(new Double(0.7));
 					
-		JPanel jplRight = new JPanel();
+		jplRight = new JPanel();
 		JLabel jlabEmpty = new JLabel("No Document");
 		jplRight.add(jlabEmpty);
 		
-		jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jplLeft, jplRight);
+		jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jspLeft, jplRight);
 		jsp.setDividerLocation(new Double(.2));
 		
 		buildFindPanel();
@@ -106,6 +85,71 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		jfrm.add(jsp);
 		
 		jfrm.setVisible(true);
+	}
+	
+	private void buildFileTree()
+	{
+		fileSystemModel = new FileSystemModel(new File("/."));
+    	fileTree = new JTree(fileSystemModel);
+    	fileTree.setEditable(true);
+    	fileTree.addMouseListener(new MouseAdapter()
+ 		{
+ 			public void mousePressed(MouseEvent e) 
+     		{
+        		int selRow = fileTree.getRowForLocation(e.getX(), e.getY());
+        		fileTree.setSelectionRow(selRow);
+        		if(selRow != -1) 
+        		{
+        			if(e.isPopupTrigger())
+					{
+						jpuFileTree.show(e.getComponent(), e.getX(), e.getY());;
+					}
+
+            		if(e.getClickCount() == 2) 
+            		{
+            			File file = (File) fileTree.getLastSelectedPathComponent();
+            			if(file.isFile())
+            			{
+            				open(file);
+            			}
+            		}
+         		}
+     		}
+ 		});
+	
+		jpuFileTree = new JPopupMenu();
+		JMenuItem jmiOpen, jmiCopyPath;
+		jpuFileTree.add(jmiOpen = new JMenuItem("Open"));
+		jpuFileTree.addSeparator();
+		jpuFileTree.add(jmiCopyPath = new JMenuItem("Copy Path"));
+		
+		jmiOpen.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent ae)
+			{
+				File file = (File) fileTree.getLastSelectedPathComponent();
+				if(file.isFile())
+				{
+					open(file);
+				}
+				else
+				{
+					TreePath path = fileTree.getSelectionPath();
+					fileTree.expandPath(path);
+				}
+			}
+		});
+		
+		jmiCopyPath.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent ae)
+			{
+				File file = (File) fileTree.getLastSelectedPathComponent();
+				Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+				StringSelection strSel = new StringSelection(file.getAbsolutePath());
+				clpbrd.setContents(strSel, null);
+			}
+		});
 	}
 	
 	private void buildMenu()
@@ -402,13 +446,13 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		});
 	}
 	
-	private void buildPopupMenu(JTextComponent jtc)
+	private void buildTextAreaPopupMenu(JTextComponent jtc)
 	{
-		jpu = new JPopupMenu();
+		jpuText = new JPopupMenu();
 		JMenuItem jmiCut, jmiCopy, jmiPaste;
-		jpu.add(jmiCut = new JMenuItem("Cut"));
-		jpu.add(jmiCopy = new JMenuItem("Copy"));
-		jpu.add(jmiPaste = new JMenuItem("Paste"));
+		jpuText.add(jmiCut = new JMenuItem("Cut"));
+		jpuText.add(jmiCopy = new JMenuItem("Copy"));
+		jpuText.add(jmiPaste = new JMenuItem("Paste"));
 		
 		jmiCut.addActionListener(this);
 		jmiCopy.addActionListener(this);
@@ -420,7 +464,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 			{
 				if(me.isPopupTrigger())
 				{
-					jpu.show(me.getComponent(), me.getX(), me.getY());
+					jpuText.show(me.getComponent(), me.getX(), me.getY());
 				}
 			}
 			
@@ -428,7 +472,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 			{
 				if(me.isPopupTrigger())
 				{
-					jpu.show(me.getComponent(), me.getX(), me.getY());
+					jpuText.show(me.getComponent(), me.getX(), me.getY());
 				}
 			}
 		});
@@ -713,7 +757,7 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		{
 			HopDocument hd = new HopDocument(file);
 			JTextComponent jtc = hd.getTextComponent();
-			buildPopupMenu(jtc);
+			buildTextAreaPopupMenu(jtc);
 			
 			dlmFiles.addElement(hd);
 		
