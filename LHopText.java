@@ -8,17 +8,11 @@ import javax.swing.text.*;
 import javax.swing.tree.*;
 import javax.swing.undo.*;
 import java.text.*;
-import javax.swing.tree.TreeModel;
 
 public class LHopText implements ActionListener, ListSelectionListener, ItemListener
 {
 	JFrame jfrm;
-	
-	JSplitPane jspLeft;
 	JPanel jplRight;
-	
-	FileSystemModel fileSystemModel;
-	JTree fileTree;
 	
 	DefaultListModel dlmFiles;
 	JList jlstFiles;
@@ -55,11 +49,8 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 	
 		buildMenu();
 		buildToolBar();
-		
-		buildFileTree();
-    	JScrollPane jscrpFileTree = new JScrollPane(fileTree);  
     	   	    	
-    	// Create and setup the FileList		
+    		// Create and setup the FileList		
 		dlmFiles = new DefaultListModel();		
 		jlstFiles = new JList(dlmFiles);
 		jlstFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -69,15 +60,11 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		JScrollPane jscrpFileList = new JScrollPane(jlstFiles);
 		jscrpFileList.setColumnHeaderView(jlabFileListHeader);
 		
-		// Add the FileTree and the FileList to the left splitpane
-		jspLeft = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, jscrpFileTree, jscrpFileList);
-		jspLeft.setResizeWeight(new Double(0.7));
-					
 		jplRight = new JPanel();
 		JLabel jlabEmpty = new JLabel("No Document");
 		jplRight.add(jlabEmpty);
 		
-		jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jspLeft, jplRight);
+		jsp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, jscrpFileList, jplRight);
 		jsp.setDividerLocation(new Double(.2));
 		
 		buildFindPanel();
@@ -85,71 +72,6 @@ public class LHopText implements ActionListener, ListSelectionListener, ItemList
 		jfrm.add(jsp);
 		
 		jfrm.setVisible(true);
-	}
-	
-	private void buildFileTree()
-	{
-		fileSystemModel = new FileSystemModel(new File("/."));
-    	fileTree = new JTree(fileSystemModel);
-    	fileTree.setEditable(true);
-    	fileTree.addMouseListener(new MouseAdapter()
- 		{
- 			public void mousePressed(MouseEvent e) 
-     		{
-        		int selRow = fileTree.getRowForLocation(e.getX(), e.getY());
-        		fileTree.setSelectionRow(selRow);
-        		if(selRow != -1) 
-        		{
-        			if(e.isPopupTrigger())
-					{
-						jpuFileTree.show(e.getComponent(), e.getX(), e.getY());;
-					}
-
-            		if(e.getClickCount() == 2) 
-            		{
-            			File file = (File) fileTree.getLastSelectedPathComponent();
-            			if(file.isFile())
-            			{
-            				open(file);
-            			}
-            		}
-         		}
-     		}
- 		});
-	
-		jpuFileTree = new JPopupMenu();
-		JMenuItem jmiOpen, jmiCopyPath;
-		jpuFileTree.add(jmiOpen = new JMenuItem("Open"));
-		jpuFileTree.addSeparator();
-		jpuFileTree.add(jmiCopyPath = new JMenuItem("Copy Path"));
-		
-		jmiOpen.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent ae)
-			{
-				File file = (File) fileTree.getLastSelectedPathComponent();
-				if(file.isFile())
-				{
-					open(file);
-				}
-				else
-				{
-					TreePath path = fileTree.getSelectionPath();
-					fileTree.expandPath(path);
-				}
-			}
-		});
-		
-		jmiCopyPath.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent ae)
-			{
-				File file = (File) fileTree.getLastSelectedPathComponent();
-				Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection strSel = new StringSelection(file.getAbsolutePath());
-				clpbrd.setContents(strSel, null);
-			}
-		});
 	}
 	
 	private void buildMenu()
