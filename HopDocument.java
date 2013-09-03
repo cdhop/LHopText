@@ -27,7 +27,7 @@ public class HopDocument
 			jtc = new JTextArea();
 		}
 		jtc.setMargin(new Insets(10,10,10,10));
-		jtc.setTabSize(3);
+		jtc.setTabSize(2);
 		
 		udmgr = new UndoManager();
 		jtc.getDocument().addUndoableEditListener(new UndoableEditListener()
