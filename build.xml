@@ -10,7 +10,7 @@
 	</target>
 	<target name="compile" description="compile the Java source code to class files">
 		<mkdir dir="classes"/>
-		<javac srcdir="." destdir="classes"/>
+		<javac srcdir="." destdir="classes" includeantruntime="false"/>
 	</target>
 	<target name="jar" depends="compile" description="create a Jar file for the application">
 		<jar destfile="LHopText.jar">
