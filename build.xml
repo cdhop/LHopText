@@ -20,14 +20,4 @@
 			</manifest>
 		</jar>
 	</target>
-	<target name="app" depends="jar">
-		<mkdir dir="LHopText.app" />
-		<mkdir dir="LHopText.app/Contents/" />
-		<copy todir="LHopText.app/Contents/">
-			<fileset dir="macApp/"/>
-		</copy>
-		<mkdir dir="LHopText.app/Contents/Resources/Java/" />
-		<copy file="LHopText.jar" todir="LHopText.app/Contents/Resources/Java/"/>
-		<chmod file="LHopText.app/Contents/MacOS/JavaApplicationStub" perm="700"/>
-	</target>
 </project>
